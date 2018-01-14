@@ -7,11 +7,27 @@ class State():
         self.dealer_score = dealer_score
         self.terminated = terminated
 
+    def __hash__(self):
+        return hash((self.player_score, self.dealer_score))
+
+    def __eq__(self, other):
+        return self.player_score == other.player_score and self.dealer_score == other.dealer_score
+
+    @staticmethod
+    def str_state_list(state_list):
+        state_strs = []
+        for state in state_list:
+            state_strs.append(str(state.player_score) + ":" + str(state.dealer_score))
+        return state_strs
+
 class GameInstance():
     def __init__(self):
         self.deck = Deck(1/3, 2/3)
         self.player = Human()
         self.dealer = Human()
+
+    def initialState(self):
+        return [State(self.player.score, self.dealer.score, False), self.reward()]
 
     def humanTurn(self, hit, human):
         if hit and human.hittable:
@@ -49,10 +65,10 @@ class GameInstance():
         continuable = self.playerTurn(hit)
 
         if continuable:
-            print("Not terminated")
+            #print("Not terminated")
             return [State(self.player.score, self.dealer.score, False), self.reward()]
         else:
-            print("Terminated")
+            #print("Terminated")
             if not self.player.busted:
                 self.dealerTurn()
             return [State(self.player.score, self.dealer.score, True), self.reward()]
