@@ -9,7 +9,7 @@ Requires Python3, numpy, matplotlib, and tqdm (for progress bars).
 **montecarlo.py** and **sarsa.py** contain logic for Montecarlo and Sarsa control, respectively.
 
 Simulations can be run through the command:
-'''
+```
 python simulate.py
-'''
+```
 This script generates the figures required in the assignment.
