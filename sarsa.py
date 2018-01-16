@@ -51,3 +51,66 @@ class SarsaSim():
             action = new_action
 
         return reward
+
+    def get_deviation(self, other):
+        total_dev = 0
+        for dealer_score in range(1, 11):
+            for player_score in range(1, 22):
+                state = State(player_score=player_score,
+                              dealer_score=dealer_score)
+                dev = (self.value_func.get_state_action(state, True) - \
+                       other.value_func.get_state_action(state, True))**2
+                dev += (self.value_func.get_state_action(state, False) - \
+                       other.value_func.get_state_action(state, False))**2
+                total_dev += dev
+        mean_dev = total_dev / (10*21*2)
+        return mean_dev
+
+class SarsaLinearSim():
+    def __init__(self, epsilon, alpha, gamma, lambdah, debug=False):
+        self.value_func = LinearValueFunc()
+        self.debug = debug
+        self.epsilon = epsilon
+        self.alpha = alpha
+        self.gamma = gamma
+        self.lambdah = lambdah
+
+    def find_action(self, state, epsilon):
+        explore = np.random.choice([True, False], p=[epsilon, 1-epsilon])
+        if explore:
+            action = [True, False][random.randint(0, 1)]
+        else:
+            action = self.value_func.get_action(state)
+        return action    
+
+    def sim_step(self):
+        game = GameInstance()
+        eligibility = 0
+        state, reward = game.initialState()
+
+        while not state.terminated:
+            action = self.find_action(state, self.epsilon)
+            new_state, reward = game.step(action)
+            new_action = self.find_action(new_state, self.epsilon)
+            delta = reward + self.gamma*self.value_func.get_state_action(new_state, new_action) - \
+                self.value_func.get_state_action(state, action)
+            eligibility = self.gamma*self.lambdah*eligibility + self.value_func.featurize(state, action)
+            self.value_func.weights += self.alpha*delta*eligibility
+            state = new_state
+            action = new_action
+
+        return reward
+
+    def get_deviation(self, other):
+        total_dev = 0
+        for dealer_score in range(1, 11):
+            for player_score in range(1, 22):
+                state = State(player_score=player_score,
+                              dealer_score=dealer_score)
+                dev = (self.value_func.get_state_action(state, True) - \
+                       other.value_func.get_state_action(state, True))**2
+                dev += (self.value_func.get_state_action(state, False) - \
+                       other.value_func.get_state_action(state, False))**2
+                total_dev += dev
+        mean_dev = total_dev / (10*21*2)
+        return mean_dev
